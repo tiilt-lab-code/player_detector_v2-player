@@ -3,7 +3,8 @@ enum RadioMessage {
     increase_db = 24409,
     decrease_db = 42436,
     kill_sound = 3114,
-    play_sound = 6322
+    play_sound = 6322,
+    toggle_pause = 52104
 }
 radio.onReceivedNumber(function (receivedNumber) {
     if (running) {
@@ -26,18 +27,19 @@ radio.onReceivedNumber(function (receivedNumber) {
         }
     }
 })
+radio.onReceivedMessage(RadioMessage.toggle_pause, function () {
+    running = !(running)
+})
 radio.onReceivedMessage(RadioMessage.kill_sound, function () {
     music.setBuiltInSpeakerEnabled(false)
-    running = false
-    basic.showString("Stop")
+    basic.showString("X")
 })
 radio.onReceivedMessage(RadioMessage.increase_db, function () {
     dB_threshold += 5
 })
 radio.onReceivedMessage(RadioMessage.play_sound, function () {
     music.setBuiltInSpeakerEnabled(true)
-    running = true
-    basic.showString("Go")
+    basic.showString("O")
 })
 function setup () {
     radio.setGroup(team)
@@ -73,6 +75,7 @@ let team = 0
 team = 0
 radio.setTransmitSerialNumber(true)
 radio.setTransmitPower(7)
+setup()
 loops.everyInterval(500, function () {
     if (running) {
         radio.sendNumber(0)
