@@ -7,7 +7,11 @@ enum RadioMessage {
 }
 radio.onReceivedNumber(function (receivedNumber) {
     if (running) {
-        if (serial_numbers.indexOf(radio.receivedPacket(RadioPacketProperty.SerialNumber)) >= 0) {
+        c_index = serial_numbers.indexOf(radio.receivedPacket(RadioPacketProperty.SerialNumber))
+        if (c_index >= 0) {
+            datalogger.log(datalogger.createCV(convertToText(c_index), radio.receivedPacket(RadioPacketProperty.SignalStrength)))
+            average_db = (average_db * data_count + radio.receivedPacket(RadioPacketProperty.SignalStrength)) / (data_count + 1)
+            data_count += 1
             if (radio.receivedPacket(RadioPacketProperty.SignalStrength) <= dB_threshold) {
                 recent_time[serial_numbers.indexOf(radio.receivedPacket(RadioPacketProperty.SerialNumber))] = radio.receivedPacket(RadioPacketProperty.Time)
             } else {
@@ -46,6 +50,7 @@ function setup () {
         music.playTone(262, music.beat(BeatFraction.Half))
         music.rest(music.beat(BeatFraction.Half))
     }
+    average_db = 0
 }
 radio.onReceivedMessage(RadioMessage.decrease_db, function () {
     dB_threshold += -5
@@ -59,7 +64,10 @@ input.onLogoEvent(TouchButtonEvent.Pressed, function () {
 })
 let recent_time: number[] = []
 let dB_threshold = 0
+let data_count = 0
+let average_db = 0
 let serial_numbers: number[] = []
+let c_index = 0
 let running = false
 let team = 0
 team = 0
