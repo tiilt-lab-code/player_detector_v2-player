@@ -6,6 +6,14 @@ enum RadioMessage {
     play_sound = 6322,
     toggle_pause = 52104
 }
+let running = false
+let c_index = 0
+let serial_numbers: number[] = []
+let average_db = 0
+let data_count = 0
+let dB_threshold = 0
+let recent_time: number[] = []
+let team = 0
 radio.onReceivedNumber(function (receivedNumber) {
     if (running) {
         c_index = serial_numbers.indexOf(radio.receivedPacket(RadioPacketProperty.SerialNumber))
@@ -63,21 +71,4 @@ input.onLogoEvent(TouchButtonEvent.Pressed, function () {
         team = 0
     }
     setup()
-})
-let recent_time: number[] = []
-let dB_threshold = 0
-let data_count = 0
-let average_db = 0
-let serial_numbers: number[] = []
-let c_index = 0
-let running = false
-let team = 0
-team = 0
-radio.setTransmitSerialNumber(true)
-radio.setTransmitPower(7)
-setup()
-loops.everyInterval(500, function () {
-    if (running) {
-        radio.sendNumber(0)
-    }
 })
