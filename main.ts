@@ -38,7 +38,7 @@ function pause_log () {
         datalogger.createCV("dtime", down_time / data_count),
         datalogger.createCV("datacount", data_count)
         )
-        basic.showString("downtime")
+        basic.showString("dt")
         basic.showNumber(down_time / data_count)
         pause2 = 0
     }
@@ -51,7 +51,7 @@ input.onLogoEvent(TouchButtonEvent.LongPressed, function () {
     pause_log()
 })
 radio.onReceivedMessage(RadioMessage.toggle_pause, function () {
-    running = !(running)
+	
 })
 input.onButtonPressed(Button.A, function () {
     front = 1
@@ -72,6 +72,7 @@ function reset_vars () {
 radio.onReceivedMessage(RadioMessage.kill_sound, function () {
     music.setBuiltInSpeakerEnabled(false)
     basic.showString("X")
+    running = false
 })
 radio.onReceivedMessage(RadioMessage.increase_db, function () {
     dB_threshold += 5
@@ -119,7 +120,8 @@ input.onButtonPressed(Button.B, function () {
 })
 radio.onReceivedMessage(RadioMessage.play_sound, function () {
     music.setBuiltInSpeakerEnabled(true)
-    basic.showString("O")
+    basic.showString("" + (team + 1))
+    running = true
 })
 function setup () {
     radio.setGroup(team)
@@ -180,38 +182,38 @@ team_mode = 0
 radio.setTransmitSerialNumber(true)
 radio.setTransmitPower(7)
 datalogger.includeTimestamp(FlashLogTimeStampFormat.Milliseconds)
-basic.showString("A front, B back")
+basic.showString("A/B")
 setup()
 loops.everyInterval(500, function () {
-    if (calibrated == 1 && pause2 == 0) {
-        roll_changed = 0
-        pitch_changed = 0
-        datalogger.log(
-        datalogger.createCV("rot_pot", input.rotation(Rotation.Pitch)),
-        datalogger.createCV("rot_roll", input.rotation(Rotation.Roll))
-        )
-        if (Math.abs(input.rotation(Rotation.Pitch) - initial_pitch) >= threshold) {
-            pitch_changed = 1
-            pitch_var += 1
-            avg_pitch = (data_count * avg_pitch + input.rotation(Rotation.Pitch)) / (data_count + 1)
-            if (front == 1) {
-                if (input.rotation(Rotation.Pitch) - initial_pitch >= threshold) {
-                    down_time += 1
-                }
-            } else {
-                if (initial_pitch - input.rotation(Rotation.Pitch) >= threshold) {
-                    down_time += 1
-                }
-            }
-        }
-        if (Math.abs(input.rotation(Rotation.Roll) - initial_roll) >= threshold) {
-            roll_changed = 1
-            roll_var += 1
-            avg_roll = (data_count * avg_roll + input.rotation(Rotation.Roll)) / (data_count + 1)
-        }
-        data_count += 1
-    }
     if (running) {
         radio.sendNumber(0)
+        if (calibrated == 1 && pause2 == 0) {
+            roll_changed = 0
+            pitch_changed = 0
+            datalogger.log(
+            datalogger.createCV("rot_pot", input.rotation(Rotation.Pitch)),
+            datalogger.createCV("rot_roll", input.rotation(Rotation.Roll))
+            )
+            if (Math.abs(input.rotation(Rotation.Pitch) - initial_pitch) >= threshold) {
+                pitch_changed = 1
+                pitch_var += 1
+                avg_pitch = (data_count * avg_pitch + input.rotation(Rotation.Pitch)) / (data_count + 1)
+                if (front == 1) {
+                    if (input.rotation(Rotation.Pitch) - initial_pitch >= threshold) {
+                        down_time += 1
+                    }
+                } else {
+                    if (initial_pitch - input.rotation(Rotation.Pitch) >= threshold) {
+                        down_time += 1
+                    }
+                }
+            }
+            if (Math.abs(input.rotation(Rotation.Roll) - initial_roll) >= threshold) {
+                roll_changed = 1
+                roll_var += 1
+                avg_roll = (data_count * avg_roll + input.rotation(Rotation.Roll)) / (data_count + 1)
+            }
+            data_count += 1
+        }
     }
 })
