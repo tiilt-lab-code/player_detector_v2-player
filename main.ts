@@ -99,6 +99,7 @@ input.onButtonPressed(Button.AB, function () {
 radio.onReceivedString(function (receivedString) {
     if (receivedString == "head_tilt_reset" && team_mode == 1) {
         pause2 = 1
+        running = false
         radio.sendValue("roll", avg_roll)
         radio.sendValue("pitch", avg_pitch)
         radio.sendValue("rvar", roll_var)
@@ -110,6 +111,7 @@ radio.onReceivedString(function (receivedString) {
         pause_log()
         reset_vars()
         pause2 = 0
+        running = true
     }
 })
 input.onButtonPressed(Button.B, function () {
