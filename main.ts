@@ -17,7 +17,13 @@ radio.onReceivedNumber(function (receivedNumber) {
                 recent_time[serial_numbers.indexOf(radio.receivedPacket(RadioPacketProperty.SerialNumber))] = radio.receivedPacket(RadioPacketProperty.Time)
             } else {
                 if (radio.receivedPacket(RadioPacketProperty.Time) - recent_time[serial_numbers.indexOf(radio.receivedPacket(RadioPacketProperty.SerialNumber))] >= 5000) {
-                    soundExpression.hello.play()
+                    if (team == 0) {
+                        soundExpression.hello.play()
+                    } else if (team == 1) {
+                        soundExpression.mysterious.play()
+                    } else {
+                        soundExpression.twinkle.play()
+                    }
                     recent_time[serial_numbers.indexOf(radio.receivedPacket(RadioPacketProperty.SerialNumber))] = radio.receivedPacket(RadioPacketProperty.Time)
                 }
             }
@@ -160,13 +166,13 @@ input.onLogoEvent(TouchButtonEvent.Pressed, function () {
 })
 let pitch_changed = 0
 let roll_changed = 0
-let team = 0
 let a_b_count = 0
 let down_time = 0
 let pitch_var = 0
 let avg_pitch = 0
 let roll_var = 0
 let avg_roll = 0
+let team = 0
 let recent_time: number[] = []
 let average_db = 0
 let serial_numbers: number[] = []
