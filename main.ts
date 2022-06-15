@@ -10,7 +10,10 @@ radio.onReceivedNumber(function (receivedNumber) {
     if (running) {
         c_index = serial_numbers.indexOf(radio.receivedPacket(RadioPacketProperty.SerialNumber))
         if (c_index >= 0) {
-            datalogger.log(datalogger.createCV(convertToText(c_index), radio.receivedPacket(RadioPacketProperty.SignalStrength)))
+            datalogger.log(
+            datalogger.createCV(convertToText(c_index), radio.receivedPacket(RadioPacketProperty.SignalStrength)),
+            datalogger.createCV("thresh", dB_threshold)
+            )
             average_db = (average_db * data_count + radio.receivedPacket(RadioPacketProperty.SignalStrength)) / (data_count + 1)
             data_count += 1
             if (radio.receivedPacket(RadioPacketProperty.SignalStrength) <= dB_threshold) {
@@ -46,12 +49,17 @@ function pause_log () {
 datalogger.onLogFull(function () {
     pause2 = 1
     music.playTone(262, music.beat(BeatFraction.Breve))
+    log_full = true
+    basic.showLeds(`
+        # # # # #
+        # # # # #
+        # # # # #
+        # # # # #
+        # # # # #
+        `)
 })
 input.onLogoEvent(TouchButtonEvent.LongPressed, function () {
     pause_log()
-})
-radio.onReceivedMessage(RadioMessage.toggle_pause, function () {
-	
 })
 input.onButtonPressed(Button.A, function () {
     front = 1
@@ -76,6 +84,7 @@ radio.onReceivedMessage(RadioMessage.kill_sound, function () {
 })
 radio.onReceivedMessage(RadioMessage.increase_db, function () {
     dB_threshold += 5
+    basic.showNumber(dB_threshold)
 })
 input.onButtonPressed(Button.AB, function () {
     if (control.millis() - last_ab >= 5000) {
@@ -95,6 +104,9 @@ input.onButtonPressed(Button.AB, function () {
         a_b_count = 0
     }
     pause_log()
+    if (log_full) {
+        datalogger.deleteLog(datalogger.DeleteType.Full)
+    }
 })
 radio.onReceivedString(function (receivedString) {
     if (receivedString == "head_tilt_reset" && team_mode == 1) {
@@ -140,6 +152,7 @@ function setup () {
 }
 radio.onReceivedMessage(RadioMessage.decrease_db, function () {
     dB_threshold += -5
+    basic.showNumber(dB_threshold)
 })
 input.onLogoEvent(TouchButtonEvent.Pressed, function () {
     team += 1
@@ -158,11 +171,12 @@ let avg_pitch = 0
 let roll_var = 0
 let avg_roll = 0
 let recent_time: number[] = []
-let dB_threshold = 0
 let average_db = 0
+let dB_threshold = 0
 let serial_numbers: number[] = []
 let c_index = 0
 let running = false
+let log_full = false
 let data_count = 0
 let front = 0
 let last_ab = 0
@@ -181,19 +195,20 @@ last_ab = control.millis()
 front = 0
 data_count = 0
 team_mode = 0
+log_full = true
 radio.setTransmitSerialNumber(true)
 radio.setTransmitPower(7)
 datalogger.includeTimestamp(FlashLogTimeStampFormat.Milliseconds)
 basic.showString("A/B")
 setup()
-loops.everyInterval(500, function () {
+loops.everyInterval(100, function () {
     if (running) {
         radio.sendNumber(0)
         if (calibrated == 1 && pause2 == 0) {
             roll_changed = 0
             pitch_changed = 0
             datalogger.log(
-            datalogger.createCV("rot_pot", input.rotation(Rotation.Pitch)),
+            datalogger.createCV("rot_pit", input.rotation(Rotation.Pitch)),
             datalogger.createCV("rot_roll", input.rotation(Rotation.Roll))
             )
             if (Math.abs(input.rotation(Rotation.Pitch) - initial_pitch) >= threshold) {
